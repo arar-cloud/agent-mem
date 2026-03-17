@@ -206,6 +206,7 @@ function main() {
     const BATCH_SIZE = 500;
     let deleted = 0;
 
+    // Use transaction control safely with exec for DDL
     db.exec('BEGIN TRANSACTION');
 
     try {
