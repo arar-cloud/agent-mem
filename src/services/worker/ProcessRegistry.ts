@@ -172,6 +172,7 @@ export async function ensureProcessExit(tracked: TrackedProcess, timeoutMs: numb
   // Already exited? Only trust exitCode, NOT proc.killed
   // proc.killed only means Node sent a signal — the process can still be alive
   if (proc.exitCode !== null) {
+    proc.removeAllListeners();
     unregisterProcess(pid);
     return;
   }
@@ -189,6 +190,7 @@ export async function ensureProcessExit(tracked: TrackedProcess, timeoutMs: numb
 
   // Check if exited gracefully — only trust exitCode
   if (proc.exitCode !== null) {
+    proc.removeAllListeners();
     unregisterProcess(pid);
     return;
   }
@@ -209,6 +211,7 @@ export async function ensureProcessExit(tracked: TrackedProcess, timeoutMs: numb
     setTimeout(resolve, 1000);
   });
   await Promise.race([sigkillExitPromise, sigkillTimeout]);
+  proc.removeAllListeners();
   unregisterProcess(pid);
 }
 
@@ -344,6 +347,8 @@ export async function reapOrphanedProcesses(activeSessionIds: Set<number>): Prom
     logger.warn('PROCESS', `Killing orphan PID ${pid} (session ${sessionDbId} gone)`, { pid, sessionDbId });
     try {
       if (processRef) {
+        // Remove all listeners before killing to prevent memory leaks from dangling handlers
+        processRef.removeAllListeners();
         processRef.kill('SIGKILL');
       } else {
         process.kill(pid, 'SIGKILL');
