@@ -81,7 +81,8 @@ async function buildHooks() {
     // Build React viewer
     console.log('\n📋 Building React viewer...');
     const { spawn } = await import('child_process');
-    const viewerBuild = spawn('node', ['scripts/build-viewer.js'], { stdio: 'inherit' });
+    // Use array args to prevent shell injection
+    const viewerBuild = spawn('node', ['scripts/build-viewer.js'], { stdio: 'inherit', shell: false });
     await new Promise((resolve, reject) => {
       viewerBuild.on('exit', (code) => {
         if (code === 0) {
