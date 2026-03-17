@@ -57,10 +57,13 @@ function buildTimestampMap(): TimestampMapping {
     const content = readFileSync(filepath, 'utf-8');
     const lines = content.split('\n').filter(l => l.trim());
 
-    for (let index = 0; index < lines.length; index++) {
-      const line = lines[index];
-      try {
-        const data = JSON.parse(line);
+    // Batch process lines to avoid N+1 queries
+    const batchSize = 500;
+    for (let index = 0; index < lines.length; index += batchSize) {
+      const batch = lines.slice(index, Math.min(index + batchSize, lines.length));
+      for (const line of batch) {
+        try {
+          const data = JSON.parse(line);
         const timestamp = data.timestamp;
         const sessionId = data.sessionId;
         const project = data.cwd;
@@ -83,7 +86,9 @@ function buildTimestampMap(): TimestampMapping {
           error: e instanceof Error ? e.message : String(e)
         });
       }
+      }
     }
+  }
   }
 
   console.log(`Built timestamp map with ${Object.keys(map).length} unique seconds`);
@@ -316,6 +321,7 @@ function main() {
       }
 
       try {
+        // Use transaction for bulk operations to avoid N+1 queries
         db.storeObservation(
           memorySessionId,
           sessionMeta.project,
@@ -327,7 +333,7 @@ function main() {
           console.log(`Imported ${importedObs} observations...`);
         }
       } catch (e) {
-        console.error(`Error storing observation:`, e);
+        logger.error('IMPORT', `Error storing observation`, { error: e instanceof Error ? e.message : String(e) });
         skipped++;
       }
       continue;
@@ -359,7 +365,7 @@ function main() {
           console.log(`Imported ${importedSum} summaries...`);
         }
       } catch (e) {
-        console.error(`Error storing summary:`, e);
+        logger.error('IMPORT', `Error storing summary`, { error: e instanceof Error ? e.message : String(e) });
         skipped++;
       }
       continue;

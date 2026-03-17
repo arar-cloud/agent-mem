@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Cleanup script for duplicate observations created by the batching bug.
+ * Cleanup script for duplicateWithRecords observations created by the batching bug.
  *
  * The bug: When multiple messages were batched together, observations were stored
  * once per message ID instead of once per observation. For example, if 4 messages
@@ -205,7 +205,9 @@ function main() {
     // Delete in batches of 500 to avoid SQLite limits
     const BATCH_SIZE = 500;
     let deleted = 0;
+    const allDeleteIds = duplicateGroups.flatMap(g => g.delete_ids);
 
+    // Use transaction control safely with exec for DDL
     db.exec('BEGIN TRANSACTION');
 
     try {

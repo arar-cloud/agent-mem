@@ -1,5 +1,5 @@
 /**
- * GracefulShutdown - Cleanup utilities for graceful exit
+ * Graceful shutdown utility for centralized service cleanup
  *
  * Extracted from worker-service.ts to provide centralized shutdown coordination.
  * Handles:
@@ -11,6 +11,53 @@
 import http from 'http';
 import { logger } from '../../utils/logger.js';
 import { stopSupervisor } from '../../supervisor/index.js';
+
+export class GracefulShutdown {
+  private cleanupHandlers: (() => Promise<void>)[] = [];
+  private eventListeners: Array<{ emitter: any; event: string; listener: any }> = [];
+  private listeners: Map<string, Function> = new Map();
+  private shutdownTimeout: NodeJS.Timeout | null = null;
+  private shutdownInProgress: boolean = false;
+
+  public registerEventListener(emitter: any, event: string, listener: any): void {
+    emitter.on(event, listener);
+    this.eventListeners.push({ emitter, event, listener });
+  }
+
+  public cleanup() {
+    // Remove all registered event listeners to prevent memory leaks
+    for (const { emitter, event, listener } of this.eventListeners) {
+      try {
+        emitter.off(event, listener);
+      } catch (error) {
+        logger.warn('SHUTDOWN', 'Failed to remove event listener', {}, error as Error);
+      }
+    }
+    this.eventListeners = [];
+    
+    // Remove all listeners to prevent memory leaks
+    for (const [name, handler] of this.listeners.entries()) {
+      try {
+        if (typeof handler === 'function') {
+          handler();
+        }
+      } catch (error) {
+        logger.warn('SHUTDOWN', `Failed to execute cleanup handler '${name}'`, {}, error as Error);
+      }
+    }
+    this.listeners.clear();
+    
+    // Clear any pending timers
+    if (this.shutdownTimeout) {
+      clearTimeout(this.shutdownTimeout);
+      this.shutdownTimeout = null;
+    }
+  }
+
+  public removeShutdownHandler(name: string): void {
+    this.listeners.delete(name);
+  }
+
 
 export interface ShutdownableService {
   shutdownAll(): Promise<void>;
@@ -51,6 +98,12 @@ export interface GracefulShutdownConfig {
  */
 export async function performGracefulShutdown(config: GracefulShutdownConfig): Promise<void> {
   logger.info('SYSTEM', 'Shutdown initiated');
+  
+  // Remove all signal listeners to prevent duplicate handlers
+  process.removeAllListeners('SIGTERM');
+  process.removeAllListeners('SIGINT');
+  process.removeAllListeners('SIGHUP');
+  process.removeAllListeners('SIGUSR2');
 
   // STEP 1: Close HTTP server first
   if (config.server) {
@@ -81,6 +134,9 @@ export async function performGracefulShutdown(config: GracefulShutdownConfig): P
 
   // STEP 6: Supervisor handles tracked child termination, PID cleanup, and stale sockets.
   await stopSupervisor();
+  
+  // Cleanup all event emitters to prevent memory leaks
+  process.removeAllListeners();
 
   logger.info('SYSTEM', 'Worker shutdown complete');
 }

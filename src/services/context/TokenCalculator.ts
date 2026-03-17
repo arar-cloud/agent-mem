@@ -7,16 +7,34 @@
 import type { Observation, TokenEconomics, ContextConfig } from './types.js';
 import { CHARS_PER_TOKEN_ESTIMATE } from './types.js';
 import { ModeManager } from '../domain/ModeManager.js';
+import { createHash } from 'crypto';
+
+// Cache for expensive token calculations
+const tokenComputationCache = new Map<string, number>();
 
 /**
  * Calculate token count for a single observation
  */
 export function calculateObservationTokens(obs: Observation): number {
+  // Create cache key from observation data
+  const cacheKey = createHash('sha256')
+    .update(JSON.stringify(obs))
+    .digest('hex');
+  
+  // Return cached value if available
+  if (tokenComputationCache.has(cacheKey)) {
+    return tokenComputationCache.get(cacheKey)!;
+  }
+  
   const obsSize = (obs.title?.length || 0) +
                   (obs.subtitle?.length || 0) +
                   (obs.narrative?.length || 0) +
                   JSON.stringify(obs.facts || []).length;
-  return Math.ceil(obsSize / CHARS_PER_TOKEN_ESTIMATE);
+  const tokens = Math.ceil(obsSize / CHARS_PER_TOKEN_ESTIMATE);
+  
+  // Cache result for repeated accesses
+  tokenComputationCache.set(cacheKey, tokens);
+  return tokens;
 }
 
 /**

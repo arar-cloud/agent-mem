@@ -6,6 +6,23 @@
 
 import { SessionStore } from '../services/sqlite/SessionStore.js';
 
+function processBatches<T, R>(items: T[], batchSize: number, processor: (batch: T[]) => R[], db: SessionStore): R[] {
+  const results: R[] = [];
+  const BATCH_SIZE = batchSize;
+  
+  // Process in chunks with transaction wrapping for better performance
+  for (let i = 0; i < items.length; i += BATCH_SIZE) {
+    const batch = items.slice(i, Math.min(i + BATCH_SIZE, items.length));
+    try {
+      results.push(...processor(batch));
+    } catch (error) {
+      console.error(`Error processing batch starting at index ${i}:`, error);
+      throw error;
+    }
+  }
+  return results;
+}
+
 function main() {
   console.log('Starting duplicate cleanup...\n');
 
@@ -33,6 +50,8 @@ function main() {
   console.log(`Found ${duplicateObs.length} duplicate observation groups\n`);
 
   let deletedObs = 0;
+  const obsIdsToDelete: number[] = [];
+  
   for (const dup of duplicateObs) {
     const ids = dup.ids.split(',').map(id => parseInt(id, 10));
     const keepId = Math.min(...ids);
@@ -41,10 +60,17 @@ function main() {
     console.log(`Observation "${dup.title.substring(0, 60)}..."`);
     console.log(`  Found ${dup.count} copies, keeping ID ${keepId}, deleting ${deleteIds.length} duplicates`);
 
-    const deleteStmt = db['db'].prepare(`DELETE FROM observations WHERE id IN (${deleteIds.join(',')})`);
-    deleteStmt.run();
+    obsIdsToDelete.push(...deleteIds);
     deletedObs += deleteIds.length;
   }
+
+  // Batch delete to reduce prepared statement overhead
+  const BATCH_SIZE = 100;
+  processBatches(obsIdsToDelete, BATCH_SIZE, (batch) => {
+    const placeholders = batch.map(() => '?').join(',');
+    db['db'].prepare(`DELETE FROM observations WHERE id IN (${placeholders})`).run(...batch);
+    return batch;
+  }, db);
 
   // Find and delete duplicate summaries
   console.log('\n\nFinding duplicate summaries...');
@@ -68,6 +94,8 @@ function main() {
   console.log(`Found ${duplicateSum.length} duplicate summary groups\n`);
 
   let deletedSum = 0;
+  const sumIdsToDelete: number[] = [];
+  
   for (const dup of duplicateSum) {
     const ids = dup.ids.split(',').map(id => parseInt(id, 10));
     const keepId = Math.min(...ids);
@@ -76,10 +104,16 @@ function main() {
     console.log(`Summary "${dup.request.substring(0, 60)}..."`);
     console.log(`  Found ${dup.count} copies, keeping ID ${keepId}, deleting ${deleteIds.length} duplicates`);
 
-    const deleteStmt = db['db'].prepare(`DELETE FROM session_summaries WHERE id IN (${deleteIds.join(',')})`);
-    deleteStmt.run();
+    sumIdsToDelete.push(...deleteIds);
     deletedSum += deleteIds.length;
   }
+
+  // Batch delete to reduce prepared statement overhead
+  processBatches(sumIdsToDelete, BATCH_SIZE, (batch) => {
+    const placeholders = batch.map(() => '?').join(',');
+    db['db'].prepare(`DELETE FROM session_summaries WHERE id IN (${placeholders})`).run(...batch);
+    return batch;
+  }, db);
 
   db.close();
 

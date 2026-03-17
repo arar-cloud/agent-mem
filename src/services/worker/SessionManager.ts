@@ -17,6 +17,15 @@ import { SessionQueueProcessor } from '../queue/SessionQueueProcessor.js';
 import { getProcessBySession, ensureProcessExit } from './ProcessRegistry.js';
 import { getSupervisor } from '../../supervisor/index.js';
 
+// Valid session state transitions
+const VALID_STATE_TRANSITIONS: Record<string, string[]> = {
+  'initialized': ['active', 'completed', 'failed'],
+  'active': ['paused', 'completed', 'failed'],
+  'paused': ['active', 'completed', 'failed'],
+  'completed': [],
+  'failed': ['active']
+};
+
 export class SessionManager {
   private dbManager: DatabaseManager;
   private sessions: Map<number, ActiveSession> = new Map();
