@@ -57,8 +57,11 @@ function buildTimestampMap(): TimestampMapping {
     const content = readFileSync(filepath, 'utf-8');
     const lines = content.split('\n').filter(l => l.trim());
 
-    for (let index = 0; index < lines.length; index++) {
-      const line = lines[index];
+    // Batch process lines to avoid N+1 queries
+    const batchSize = 500;
+    for (let index = 0; index < lines.length; index += batchSize) {
+      const batch = lines.slice(index, Math.min(index + batchSize, lines.length));
+      for (const line of batch) {
       try {
         const data = JSON.parse(line);
         const timestamp = data.timestamp;
@@ -83,7 +86,9 @@ function buildTimestampMap(): TimestampMapping {
           error: e instanceof Error ? e.message : String(e)
         });
       }
+      }
     }
+  }
   }
 
   console.log(`Built timestamp map with ${Object.keys(map).length} unique seconds`);
