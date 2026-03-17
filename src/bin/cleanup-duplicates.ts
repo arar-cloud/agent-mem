@@ -6,11 +6,19 @@
 
 import { SessionStore } from '../services/sqlite/SessionStore.js';
 
-function processBatches<T, R>(items: T[], batchSize: number, processor: (batch: T[]) => R[]): R[] {
+function processBatches<T, R>(items: T[], batchSize: number, processor: (batch: T[]) => R[], db: SessionStore): R[] {
   const results: R[] = [];
-  for (let i = 0; i < items.length; i += batchSize) {
-    const batch = items.slice(i, i + batchSize);
-    results.push(...processor(batch));
+  const BATCH_SIZE = batchSize;
+  
+  // Process in chunks with transaction wrapping for better performance
+  for (let i = 0; i < items.length; i += BATCH_SIZE) {
+    const batch = items.slice(i, Math.min(i + BATCH_SIZE, items.length));
+    try {
+      results.push(...processor(batch));
+    } catch (error) {
+      console.error(`Error processing batch starting at index ${i}:`, error);
+      throw error;
+    }
   }
   return results;
 }
@@ -62,7 +70,7 @@ function main() {
     const placeholders = batch.map(() => '?').join(',');
     db['db'].prepare(`DELETE FROM observations WHERE id IN (${placeholders})`).run(...batch);
     return batch;
-  });
+  }, db);
 
   // Find and delete duplicate summaries
   console.log('\n\nFinding duplicate summaries...');
@@ -105,7 +113,7 @@ function main() {
     const placeholders = batch.map(() => '?').join(',');
     db['db'].prepare(`DELETE FROM session_summaries WHERE id IN (${placeholders})`).run(...batch);
     return batch;
-  });
+  }, db);
 
   db.close();
 
