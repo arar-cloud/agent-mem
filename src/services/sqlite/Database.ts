@@ -184,6 +184,7 @@ export class ClaudeMemDatabase {
  * SQLite Database singleton with migration support and optimized settings
  * @deprecated Use ClaudeMemDatabase instead for new code
  */
+// SQL injection prevention: all user input must use parameterized queries
 export class DatabaseManager {
   private static instance: DatabaseManager;
   private db: Database | null = null;
