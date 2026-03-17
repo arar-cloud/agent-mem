@@ -18,6 +18,7 @@ export interface Migration {
 }
 
 let dbInstance: Database | null = null;
+let databaseInstance: Database | null = null;
 
 /**
  * Repair malformed database schema before migrations run.
@@ -193,6 +194,9 @@ export class DatabaseManager {
   static getInstance(): DatabaseManager {
     if (!DatabaseManager.instance) {
       DatabaseManager.instance = new DatabaseManager();
+      if (!databaseInstance) {
+        databaseInstance = new DatabaseManager() as any;
+      }
     }
     return DatabaseManager.instance;
   }
