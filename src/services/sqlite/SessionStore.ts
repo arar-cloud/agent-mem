@@ -51,6 +51,48 @@ export class SessionStore {
   }
 
   /**
+   * Batch fetch sessions with their related data using IN clauses (prevents N+1 queries)
+   */
+  async getActiveSessions() {
+    const sessionIds = this.getPreparedStatement(
+      'SELECT id FROM sdk_sessions WHERE status = ?'
+    ).all('active').map((s: any) => s.id);
+
+    if (sessionIds.length === 0) return [];
+
+    // Batch fetch all observations and summaries for active sessions
+    const placeholders = sessionIds.map(() => '?').join(',');
+    const observations = this.getPreparedStatement(
+      `SELECT * FROM observations WHERE memory_session_id IN (${placeholders})`
+    ).all(...sessionIds);
+    const summaries = this.getPreparedStatement(
+      `SELECT * FROM session_summaries WHERE memory_session_id IN (${placeholders})`
+    ).all(...sessionIds);
+
+    // Group observations and summaries by session ID
+    const obsMap = new Map<any, any[]>();
+    const summaryMap = new Map<any, any>();
+    observations.forEach((obs: any) => {
+      if (!obsMap.has(obs.memory_session_id)) obsMap.set(obs.memory_session_id, []);
+      obsMap.get(obs.memory_session_id)!.push(obs);
+    });
+    summaries.forEach((sum: any) => {
+      summaryMap.set(sum.memory_session_id, sum);
+    });
+
+    // Fetch sessions once with grouped data
+    const sessions = this.getPreparedStatement(
+      `SELECT * FROM sdk_sessions WHERE id IN (${placeholders})`
+    ).all(...sessionIds);
+
+    return sessions.map((session: any) => ({
+      ...session,
+      observations: obsMap.get(session.memory_session_id) || [],
+      summary: summaryMap.get(session.memory_session_id)
+    }));
+  }
+
+  /**
    * Cleanup prepared statements to prevent memory leaks
    */
   public cleanup(): void {
