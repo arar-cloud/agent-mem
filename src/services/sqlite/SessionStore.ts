@@ -24,6 +24,9 @@ export class SessionStore {
   private queryCache = new Map<string, { data: any; timestamp: number }>();
   private cacheTimeout = 5000; // 5 second cache for frequently accessed queries
   public db: Database;
+  private preparedStatements: Map<string, any> = new Map();
+  private connectionCount = 0;
+  private static instance: SessionStore | null = null;
 
   private getCacheKey(...args: any[]): string {
     return JSON.stringify(args);
@@ -37,11 +40,44 @@ export class SessionStore {
     this.queryCache.clear();
   }
 
+  /**
+   * Get or create prepared statement to avoid repeated compilation
+   */
+  private getPreparedStatement(sql: string): any {
+    if (!this.preparedStatements.has(sql)) {
+      this.preparedStatements.set(sql, this.db.prepare(sql));
+    }
+    return this.preparedStatements.get(sql);
+  }
+
+  /**
+   * Cleanup prepared statements to prevent memory leaks
+   */
+  public cleanup(): void {
+    this.preparedStatements.clear();
+    if (this.connectionCount > 0) {
+      this.connectionCount--;
+    }
+    if (this.connectionCount === 0 && this.db) {
+      this.db.close();
+      this.db = null as any;
+      SessionStore.instance = null;
+    }
+  }
+
   constructor(dbPath: string = DB_PATH) {
     if (dbPath !== ':memory:') {
       ensureDir(DATA_DIR);
     }
-    this.db = new Database(dbPath);
+    // Reuse existing connection if available to avoid redundant connections
+    if (!SessionStore.instance || !SessionStore.instance.db) {
+      this.db = new Database(dbPath);
+      this.connectionCount = 1;
+      SessionStore.instance = this;
+    } else {
+      this.db = SessionStore.instance.db;
+      this.connectionCount = SessionStore.instance.connectionCount + 1;
+    }
 
     // Ensure optimized settings
     this.db.run('PRAGMA journal_mode = WAL');
