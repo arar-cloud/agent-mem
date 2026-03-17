@@ -62,8 +62,8 @@ function buildTimestampMap(): TimestampMapping {
     for (let index = 0; index < lines.length; index += batchSize) {
       const batch = lines.slice(index, Math.min(index + batchSize, lines.length));
       for (const line of batch) {
-      try {
-        const data = JSON.parse(line);
+        try {
+          const data = JSON.parse(line);
         const timestamp = data.timestamp;
         const sessionId = data.sessionId;
         const project = data.cwd;
@@ -321,6 +321,7 @@ function main() {
       }
 
       try {
+        // Use prepared statements within transaction context to avoid N+1 queries
         db.storeObservation(
           memorySessionId,
           sessionMeta.project,
