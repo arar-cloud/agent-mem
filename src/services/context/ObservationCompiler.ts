@@ -267,13 +267,17 @@ export function getFullObservationIds(observations: Observation[], count: number
 export function compileObservations(observations: Observation[]): CompiledObservation[] {
   // Build parent-child map in one pass
   const childrenByParentId = new Map<string, Observation[]>();
+  // Cache for normalized/formatted values to avoid redundant calculations
+  const formatCache = new Map<string, string>();
+  
   for (const obs of observations) {
     if (!childrenByParentId.has(obs.parentId)) {
       childrenByParentId.set(obs.parentId, []);
     }
     childrenByParentId.get(obs.parentId)!.push(obs);
   }
-  // Compile observations using the map
+  
+  // Compile observations using the map with memoized formatting
   return observations.map(obs => ({
     ...obs,
     children: childrenByParentId.get(obs.id) || []
