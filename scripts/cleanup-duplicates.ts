@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Cleanup script for duplicate observations created by the batching bug.
+ * Cleanup script for duplicateWithRecords observations created by the batching bug.
  *
  * The bug: When multiple messages were batched together, observations were stored
  * once per message ID instead of once per observation. For example, if 4 messages
