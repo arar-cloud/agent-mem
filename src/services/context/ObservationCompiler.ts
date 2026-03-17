@@ -262,13 +262,14 @@ export function getFullObservationIds(observations: Observation[], count: number
 }
 
 /**
- * Compile observations with efficient parent-child mapping
+ * Compile observations with efficient parent-child mapping and caching
  */
 export function compileObservations(observations: Observation[]): CompiledObservation[] {
   // Build parent-child map in one pass
   const childrenByParentId = new Map<string, Observation[]>();
   // Cache for normalized/formatted values to avoid redundant calculations
   const formatCache = new Map<string, string>();
+  const metadataCache = new Map<number, any>();
   
   for (const obs of observations) {
     if (!childrenByParentId.has(obs.parentId)) {
@@ -277,9 +278,18 @@ export function compileObservations(observations: Observation[]): CompiledObserv
     childrenByParentId.get(obs.parentId)!.push(obs);
   }
   
-  // Compile observations using the map with memoized formatting
-  return observations.map(obs => ({
-    ...obs,
-    children: childrenByParentId.get(obs.id) || []
-  }));
+  // Compile observations using the map with memoized formatting and metadata
+  return observations.map(obs => {
+    // Cache metadata to avoid recomputation for same observation
+    let metadata = metadataCache.get(obs.id);
+    if (!metadata) {
+      metadata = { type: obs.type, concepts: obs.concepts };
+      metadataCache.set(obs.id, metadata);
+    }
+    return {
+      ...obs,
+      children: childrenByParentId.get(obs.id) || [],
+      _cachedMetadata: metadata
+    };
+  });
 }
