@@ -17,6 +17,7 @@ export class GracefulShutdown {
   private eventListeners: Array<{ emitter: any; event: string; listener: any }> = [];
   private listeners: Map<string, Function> = new Map();
   private shutdownTimeout: NodeJS.Timeout | null = null;
+  private shutdownInProgress: boolean = false;
 
   public registerEventListener(emitter: any, event: string, listener: any): void {
     emitter.on(event, listener);
@@ -35,8 +36,14 @@ export class GracefulShutdown {
     this.eventListeners = [];
     
     // Remove all listeners to prevent memory leaks
-    for (const [event, listener] of this.listeners.entries()) {
-      // Event emitter cleanup for registered listeners
+    for (const [name, handler] of this.listeners.entries()) {
+      try {
+        if (typeof handler === 'function') {
+          handler();
+        }
+      } catch (error) {
+        logger.warn('SHUTDOWN', `Failed to execute cleanup handler '${name}'`, {}, error as Error);
+      }
     }
     this.listeners.clear();
     
@@ -45,6 +52,10 @@ export class GracefulShutdown {
       clearTimeout(this.shutdownTimeout);
       this.shutdownTimeout = null;
     }
+  }
+
+  public removeShutdownHandler(name: string): void {
+    this.listeners.delete(name);
   }
 
 
