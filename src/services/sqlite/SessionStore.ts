@@ -20,7 +20,21 @@ import { computeObservationContentHash, findDuplicateObservation } from './obser
  * Provides simple, synchronous CRUD operations for session-based memory
  */
 export class SessionStore {
+  private queryCache = new Map<string, { data: any; timestamp: number }>();
+  private cacheTimeout = 5000; // 5 second cache for frequently accessed queries
   public db: Database;
+
+  private getCacheKey(...args: any[]): string {
+    return JSON.stringify(args);
+  }
+
+  private isCacheValid(timestamp: number): boolean {
+    return Date.now() - timestamp < this.cacheTimeout;
+  }
+
+  private clearCache(): void {
+    this.queryCache.clear();
+  }
 
   constructor(dbPath: string = DB_PATH) {
     if (dbPath !== ':memory:') {
