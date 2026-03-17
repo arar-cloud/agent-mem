@@ -16,7 +16,8 @@ import type { PendingMessageStore } from './PendingMessageStore.js';
 import { computeObservationContentHash, findDuplicateObservation } from './observations/store.js';
 
 /**
- * Session data store for SDK sessions, observations, and summaries
+ * Session data store for SDK sessions,
+  observations, and summaries
  * Provides simple, synchronous CRUD operations for session-based memory
  */
 export class SessionStore {
