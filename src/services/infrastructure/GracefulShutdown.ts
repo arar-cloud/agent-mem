@@ -14,10 +14,26 @@ import { stopSupervisor } from '../../supervisor/index.js';
 
 export class GracefulShutdown {
   private cleanupHandlers: (() => Promise<void>)[] = [];
+  private eventListeners: Array<{ emitter: any; event: string; listener: any }> = [];
   private listeners: Map<string, Function> = new Map();
   private shutdownTimeout: NodeJS.Timeout | null = null;
 
+  public registerEventListener(emitter: any, event: string, listener: any): void {
+    emitter.on(event, listener);
+    this.eventListeners.push({ emitter, event, listener });
+  }
+
   public cleanup() {
+    // Remove all registered event listeners to prevent memory leaks
+    for (const { emitter, event, listener } of this.eventListeners) {
+      try {
+        emitter.off(event, listener);
+      } catch (error) {
+        logger.warn('SHUTDOWN', 'Failed to remove event listener', {}, error as Error);
+      }
+    }
+    this.eventListeners = [];
+    
     // Remove all listeners to prevent memory leaks
     for (const [event, listener] of this.listeners.entries()) {
       // Event emitter cleanup for registered listeners
