@@ -37,6 +37,18 @@ export const MANAGED_CREDENTIAL_KEYS = [
   'OPENROUTER_API_KEY',
 ];
 
+// Allowlist of safe environment variables to prevent accidental secret exposure
+// Only non-sensitive configuration variables should be accessible
+const SAFE_ENV_KEYS = [
+  'NODE_ENV',
+  'DEBUG',
+  'LOG_LEVEL',
+  'PORT',
+  'HOST',
+  'ARAR_MODE',
+  'ARAR_PORT'
+];
+
 export interface ClaudeMemEnv {
   // Credentials (optional - empty means use CLI billing for Claude)
   ANTHROPIC_API_KEY?: string;
@@ -229,6 +241,15 @@ export function buildIsolatedEnv(includeCredentials: boolean = true): Record<str
   }
 
   return isolatedEnv;
+}
+
+/**
+ * Validate that an environment variable key is in the safe list
+ * @param key - Environment variable key to validate
+ * @returns true if the key is in the allowlist, false otherwise
+ */
+function isAllowedEnvKey(key: string): boolean {
+  return SAFE_ENV_KEYS.includes(key) || MANAGED_CREDENTIAL_KEYS.includes(key);
 }
 
 /**

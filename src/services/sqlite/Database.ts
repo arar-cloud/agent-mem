@@ -18,6 +18,7 @@ export interface Migration {
 }
 
 let dbInstance: Database | null = null;
+let databaseInstance: Database | null = null;
 
 /**
  * Repair malformed database schema before migrations run.
@@ -184,6 +185,7 @@ export class ClaudeMemDatabase {
  * SQLite Database singleton with migration support and optimized settings
  * @deprecated Use ClaudeMemDatabase instead for new code
  */
+// SQL injection prevention: all user input must use parameterized queries
 export class DatabaseManager {
   private static instance: DatabaseManager;
   private db: Database | null = null;
@@ -192,6 +194,9 @@ export class DatabaseManager {
   static getInstance(): DatabaseManager {
     if (!DatabaseManager.instance) {
       DatabaseManager.instance = new DatabaseManager();
+      if (!databaseInstance) {
+        databaseInstance = new DatabaseManager() as any;
+      }
     }
     return DatabaseManager.instance;
   }

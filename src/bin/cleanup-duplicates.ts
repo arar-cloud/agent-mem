@@ -6,6 +6,15 @@
 
 import { SessionStore } from '../services/sqlite/SessionStore.js';
 
+function processBatches<T, R>(items: T[], batchSize: number, processor: (batch: T[]) => R[]): R[] {
+  const results: R[] = [];
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    results.push(...processor(batch));
+  }
+  return results;
+}
+
 function main() {
   console.log('Starting duplicate cleanup...\n');
 
@@ -33,6 +42,8 @@ function main() {
   console.log(`Found ${duplicateObs.length} duplicate observation groups\n`);
 
   let deletedObs = 0;
+  const obsIdsToDelete: number[] = [];
+  
   for (const dup of duplicateObs) {
     const ids = dup.ids.split(',').map(id => parseInt(id, 10));
     const keepId = Math.min(...ids);
@@ -41,10 +52,17 @@ function main() {
     console.log(`Observation "${dup.title.substring(0, 60)}..."`);
     console.log(`  Found ${dup.count} copies, keeping ID ${keepId}, deleting ${deleteIds.length} duplicates`);
 
-    const deleteStmt = db['db'].prepare(`DELETE FROM observations WHERE id IN (${deleteIds.join(',')})`);
-    deleteStmt.run();
+    obsIdsToDelete.push(...deleteIds);
     deletedObs += deleteIds.length;
   }
+
+  // Batch delete to reduce prepared statement overhead
+  const BATCH_SIZE = 100;
+  processBatches(obsIdsToDelete, BATCH_SIZE, (batch) => {
+    const placeholders = batch.map(() => '?').join(',');
+    db['db'].prepare(`DELETE FROM observations WHERE id IN (${placeholders})`).run(...batch);
+    return batch;
+  });
 
   // Find and delete duplicate summaries
   console.log('\n\nFinding duplicate summaries...');
@@ -68,6 +86,8 @@ function main() {
   console.log(`Found ${duplicateSum.length} duplicate summary groups\n`);
 
   let deletedSum = 0;
+  const sumIdsToDelete: number[] = [];
+  
   for (const dup of duplicateSum) {
     const ids = dup.ids.split(',').map(id => parseInt(id, 10));
     const keepId = Math.min(...ids);
@@ -76,10 +96,16 @@ function main() {
     console.log(`Summary "${dup.request.substring(0, 60)}..."`);
     console.log(`  Found ${dup.count} copies, keeping ID ${keepId}, deleting ${deleteIds.length} duplicates`);
 
-    const deleteStmt = db['db'].prepare(`DELETE FROM session_summaries WHERE id IN (${deleteIds.join(',')})`);
-    deleteStmt.run();
+    sumIdsToDelete.push(...deleteIds);
     deletedSum += deleteIds.length;
   }
+
+  // Batch delete to reduce prepared statement overhead
+  processBatches(sumIdsToDelete, BATCH_SIZE, (batch) => {
+    const placeholders = batch.map(() => '?').join(',');
+    db['db'].prepare(`DELETE FROM session_summaries WHERE id IN (${placeholders})`).run(...batch);
+    return batch;
+  });
 
   db.close();
 

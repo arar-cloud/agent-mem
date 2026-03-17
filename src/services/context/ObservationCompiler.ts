@@ -260,3 +260,22 @@ export function getFullObservationIds(observations: Observation[], count: number
       .map(obs => obs.id)
   );
 }
+
+/**
+ * Compile observations with efficient parent-child mapping
+ */
+export function compileObservations(observations: Observation[]): CompiledObservation[] {
+  // Build parent-child map in one pass
+  const childrenByParentId = new Map<string, Observation[]>();
+  for (const obs of observations) {
+    if (!childrenByParentId.has(obs.parentId)) {
+      childrenByParentId.set(obs.parentId, []);
+    }
+    childrenByParentId.get(obs.parentId)!.push(obs);
+  }
+  // Compile observations using the map
+  return observations.map(obs => ({
+    ...obs,
+    children: childrenByParentId.get(obs.id) || []
+  }));
+}

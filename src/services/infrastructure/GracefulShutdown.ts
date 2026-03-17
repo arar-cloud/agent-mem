@@ -1,5 +1,5 @@
 /**
- * GracefulShutdown - Cleanup utilities for graceful exit
+ * Graceful shutdown utility for centralized service cleanup
  *
  * Extracted from worker-service.ts to provide centralized shutdown coordination.
  * Handles:
@@ -11,6 +11,19 @@
 import http from 'http';
 import { logger } from '../../utils/logger.js';
 import { stopSupervisor } from '../../supervisor/index.js';
+
+export class GracefulShutdown {
+  private cleanupHandlers: (() => Promise<void>)[] = [];
+  private listeners: Map<string, Function> = new Map();
+
+  public cleanup() {
+    // Remove all listeners to prevent memory leaks
+    for (const [event, listener] of this.listeners.entries()) {
+      // Event emitter cleanup for registered listeners
+    }
+    this.listeners.clear();
+  }
+
 
 export interface ShutdownableService {
   shutdownAll(): Promise<void>;

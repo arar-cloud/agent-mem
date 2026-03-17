@@ -46,6 +46,7 @@ export async function runProviderConfiguration(): Promise<ProviderConfig> {
     config.claudeAuthMethod = authMethod;
 
     if (authMethod === 'api') {
+      // Password prompts: ensure no logging/storage of secrets
       const apiKey = await p.password({
         message: 'Enter your Anthropic API key:',
         validate: (value) => {

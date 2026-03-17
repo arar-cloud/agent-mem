@@ -16,11 +16,39 @@ import type { PendingMessageStore } from './PendingMessageStore.js';
 import { computeObservationContentHash, findDuplicateObservation } from './observations/store.js';
 
 /**
- * Session data store for SDK sessions, observations, and summaries
+ * Session data store for SDK sessions,
+  observations, and summaries
  * Provides simple, synchronous CRUD operations for session-based memory
  */
 export class SessionStore {
+  private queryCache = new Map<string, { data: any; timestamp: number }>();
+  private cacheTimeout = 5000; // 5 second cache for frequently accessed queries
   public db: Database;
+
+  private getCacheKey(...args: any[]): string {
+    return JSON.stringify(args);
+  }
+
+  private isCacheValid(timestamp: number): boolean {
+    return Date.now() - timestamp < this.cacheTimeout;
+  }
+
+  private clearCache(): void {
+    this.queryCache.clear();
+  }
+
+  /**
+   * Get cached query results or fetch from database with caching
+   */
+  private getCachedQuery<T>(key: string, query: () => T): T {
+    const cached = this.queryCache.get(key);
+    if (cached && this.isCacheValid(cached.timestamp)) {
+      return cached.data;
+    }
+    const data = query();
+    this.queryCache.set(key, { data, timestamp: Date.now() });
+    return data;
+  }
 
   constructor(dbPath: string = DB_PATH) {
     if (dbPath !== ':memory:') {

@@ -205,7 +205,9 @@ function main() {
     // Delete in batches of 500 to avoid SQLite limits
     const BATCH_SIZE = 500;
     let deleted = 0;
+    const allDeleteIds = duplicateGroups.flatMap(g => g.delete_ids);
 
+    // Use transaction control safely with exec for DDL
     db.exec('BEGIN TRANSACTION');
 
     try {

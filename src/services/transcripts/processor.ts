@@ -173,6 +173,12 @@ export class TranscriptEventProcessor {
   private async handleSessionInit(session: SessionState, fields: Record<string, unknown>): Promise<void> {
     const prompt = typeof fields.prompt === 'string' ? fields.prompt : '';
     const cwd = session.cwd ?? process.cwd();
+    
+    // Input validation: reject suspiciously long or malicious prompts
+    if (prompt && prompt.length > 50000) {
+      throw new Error('Prompt exceeds maximum length');
+    }
+    
     if (prompt) {
       session.lastUserMessage = prompt;
     }
