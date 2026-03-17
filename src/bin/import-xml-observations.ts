@@ -321,7 +321,7 @@ function main() {
       }
 
       try {
-        // Use prepared statements within transaction context to avoid N+1 queries
+        // Use transaction for bulk operations to avoid N+1 queries
         db.storeObservation(
           memorySessionId,
           sessionMeta.project,
@@ -333,7 +333,7 @@ function main() {
           console.log(`Imported ${importedObs} observations...`);
         }
       } catch (e) {
-        console.error(`Error storing observation:`, e);
+        logger.error('IMPORT', `Error storing observation`, { error: e instanceof Error ? e.message : String(e) });
         skipped++;
       }
       continue;
@@ -365,7 +365,7 @@ function main() {
           console.log(`Imported ${importedSum} summaries...`);
         }
       } catch (e) {
-        console.error(`Error storing summary:`, e);
+        logger.error('IMPORT', `Error storing summary`, { error: e instanceof Error ? e.message : String(e) });
         skipped++;
       }
       continue;
