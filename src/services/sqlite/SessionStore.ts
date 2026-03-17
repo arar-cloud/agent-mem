@@ -37,6 +37,19 @@ export class SessionStore {
     this.queryCache.clear();
   }
 
+  /**
+   * Get cached query results or fetch from database with caching
+   */
+  private getCachedQuery<T>(key: string, query: () => T): T {
+    const cached = this.queryCache.get(key);
+    if (cached && this.isCacheValid(cached.timestamp)) {
+      return cached.data;
+    }
+    const data = query();
+    this.queryCache.set(key, { data, timestamp: Date.now() });
+    return data;
+  }
+
   constructor(dbPath: string = DB_PATH) {
     if (dbPath !== ':memory:') {
       ensureDir(DATA_DIR);
