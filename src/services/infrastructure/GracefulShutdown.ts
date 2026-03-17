@@ -15,6 +15,7 @@ import { stopSupervisor } from '../../supervisor/index.js';
 export class GracefulShutdown {
   private cleanupHandlers: (() => Promise<void>)[] = [];
   private listeners: Map<string, Function> = new Map();
+  private shutdownTimeout: NodeJS.Timeout | null = null;
 
   public cleanup() {
     // Remove all listeners to prevent memory leaks
@@ -22,6 +23,12 @@ export class GracefulShutdown {
       // Event emitter cleanup for registered listeners
     }
     this.listeners.clear();
+    
+    // Clear any pending timers
+    if (this.shutdownTimeout) {
+      clearTimeout(this.shutdownTimeout);
+      this.shutdownTimeout = null;
+    }
   }
 
 
@@ -64,6 +71,12 @@ export interface GracefulShutdownConfig {
  */
 export async function performGracefulShutdown(config: GracefulShutdownConfig): Promise<void> {
   logger.info('SYSTEM', 'Shutdown initiated');
+  
+  // Remove all signal listeners to prevent duplicate handlers
+  process.removeAllListeners('SIGTERM');
+  process.removeAllListeners('SIGINT');
+  process.removeAllListeners('SIGHUP');
+  process.removeAllListeners('SIGUSR2');
 
   // STEP 1: Close HTTP server first
   if (config.server) {
@@ -94,6 +107,9 @@ export async function performGracefulShutdown(config: GracefulShutdownConfig): P
 
   // STEP 6: Supervisor handles tracked child termination, PID cleanup, and stale sockets.
   await stopSupervisor();
+  
+  // Cleanup all event emitters to prevent memory leaks
+  process.removeAllListeners();
 
   logger.info('SYSTEM', 'Worker shutdown complete');
 }
