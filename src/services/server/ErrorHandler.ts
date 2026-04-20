@@ -7,15 +7,70 @@
 import { Request, Response, NextFunction, ErrorRequestHandler } from 'express';
 import { logger } from '../../utils/logger.js';
 
-/**
- * Standard error response format
- */
-export interface ErrorResponse {
+interface ErrorResponse {
   error: string;
-  message: string;
-  code?: string;
-  details?: unknown;
+  requestId?: string;
+  status: number;
 }
+
+/**
+ * Sanitize error for client response
+ * Hides internal details and returns generic message
+ */
+export function formatErrorResponse(error: any, requestId?: string): ErrorResponse {
+  // Log full error details server-side
+  logger.error('Request error', {
+    name: error.name,
+    message: error.message,
+    stack: error.stack,
+    requestId
+  });
+
+  // Determine HTTP status
+  const status = error.status || error.statusCode || 500;
+
+  // Return generic message to client based on status
+  let clientMessage = 'An error occurred';
+
+  switch (status) {
+    case 400:
+      clientMessage = 'Invalid request';
+      break;
+    case 401:
+      clientMessage = 'Authentication required';
+      break;
+    case 403:
+      clientMessage = 'Access denied';
+      break;
+    case 404:
+      clientMessage = 'Resource not found';
+      break;
+    case 409:
+      clientMessage = 'Conflict';
+      break;
+    case 422:
+      clientMessage = 'Validation failed';
+      break;
+    case 429:
+      clientMessage = 'Too many requests';
+      break;
+    default:
+      clientMessage = 'Server error';
+  }
+
+  const response: ErrorResponse = {
+    error: clientMessage,
+    status
+  };
+
+  if (requestId) {
+    response.requestId = requestId;
+  }
+
+  return response;
+}
+
+
 
 /**
  * Application error with additional context
@@ -67,16 +122,11 @@ export const errorHandler: ErrorRequestHandler = (
     code: err instanceof AppError ? err.code : undefined
   }, err);
 
-  // Build response
-  const response = createErrorResponse(
-    err.name || 'Error',
-    err.message,
-    err instanceof AppError ? err.code : undefined,
-    err instanceof AppError ? err.details : undefined
-  );
+  // Build sanitized response
+  const sanitizedResponse = formatErrorResponse(err, req.id);
 
   // Send response (don't call next, as we've handled the error)
-  res.status(statusCode).json(response);
+  res.status(sanitizedResponse.status).json(sanitizedResponse);
 };
 
 /**
