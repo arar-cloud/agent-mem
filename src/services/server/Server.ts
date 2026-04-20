@@ -46,6 +46,9 @@ function applySecurityHeaders(req: express.Request, res: express.Response, next:
   // Permissions Policy (formerly Feature-Policy)
   res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), payment=(), usb=()');
   
+  // Strict-Transport-Security for HTTPS enforcement
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  
   next();
 }
 import { errorHandler, notFoundHandler } from './ErrorHandler.js';
