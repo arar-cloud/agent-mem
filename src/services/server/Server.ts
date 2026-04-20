@@ -16,6 +16,41 @@ import path from 'path';
 import { ALLOWED_OPERATIONS, ALLOWED_TOPICS } from './allowed-constants.js';
 import { logger } from '../../utils/logger.js';
 import { createMiddleware, summarizeRequestBody, requireLocalhost } from './Middleware.js';
+
+/**
+ * Apply security headers to all responses
+ */
+function applySecurityHeaders(req: express.Request, res: express.Response, next: express.NextFunction): void {
+  // Prevent clickjacking
+  res.setHeader('X-Frame-Options', 'DENY');
+  
+  // Prevent MIME type sniffing
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  
+  // Enable XSS filtering
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  
+  // Content Security Policy
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'"
+  );
+  
+  // Prevent information leakage
+  res.removeHeader('Server');
+  res.removeHeader('X-Powered-By');
+  
+  // Referrer Policy
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  
+  // Permissions Policy (formerly Feature-Policy)
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), payment=(), usb=()');
+  
+  // Strict-Transport-Security for HTTPS enforcement
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  
+  next();
+}
 import { errorHandler, notFoundHandler } from './ErrorHandler.js';
 import { getSupervisor } from '../../supervisor/index.js';
 import { isPidAlive } from '../../supervisor/process-registry.js';
@@ -153,6 +188,9 @@ export class Server {
    * Setup Express middleware
    */
   private setupMiddleware(): void {
+    // Apply security headers first (highest priority)
+    this.app.use(applySecurityHeaders);
+    
     const middlewares = createMiddleware(summarizeRequestBody);
     middlewares.forEach(mw => this.app.use(mw));
   }

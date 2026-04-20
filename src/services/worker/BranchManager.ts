@@ -24,9 +24,9 @@ function isValidBranchName(branchName: string): boolean {
   }
   // Git branch name validation: alphanumeric, hyphen, underscore, slash, dot
   // Must not start with dot, hyphen, or slash
-  // Must not contain double dots (..)
+  // Must not contain double dots (..) or null bytes
   const validBranchRegex = /^[a-zA-Z0-9][a-zA-Z0-9._/-]*$/;
-  return validBranchRegex.test(branchName) && !branchName.includes('..');
+  return validBranchRegex.test(branchName) && !branchName.includes('..') && !branchName.includes('\0');
 }
 
 // Timeout constants (increased for slow systems)
@@ -60,7 +60,8 @@ function execGit(args: string[]): string {
     encoding: 'utf-8',
     timeout: GIT_COMMAND_TIMEOUT_MS,
     windowsHide: true,
-    shell: false  // CRITICAL: Never use shell with user input
+    shell: false,  // CRITICAL: Never use shell with user input
+    stdio: ['pipe', 'pipe', 'pipe']
   });
 
   if (result.error) {
