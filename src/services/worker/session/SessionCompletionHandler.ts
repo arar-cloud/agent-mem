@@ -1,6 +1,10 @@
 /**
  * Session Completion Handler
  *
+ * Handles session completion and cleanup with security measures:
+ * - Regenerates session tokens to prevent fixation
+ * - Revokes old tokens
+ * - Clears sensitive data
  * Consolidates session completion logic for manual session deletion/completion.
  * Used by DELETE /api/sessions/:id and POST /api/sessions/:id/complete endpoints.
  *
