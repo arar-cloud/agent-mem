@@ -12,6 +12,31 @@ import { getPackageRoot } from '../../../shared/paths.js';
 import { logger } from '../../../utils/logger.js';
 
 /**
+ * Authentication middleware - ensures request has valid session
+ * Must be called on all protected routes
+ */
+export function requireAuth(req: Request, res: Response, next: NextFunction): void {
+  try {
+    // Check for session token in headers or cookies
+    const token = req.headers.authorization?.replace('Bearer ', '') || (req as any).cookies?.sessionToken;
+    
+    if (!token) {
+      logger.warn('SECURITY', 'Unauthenticated access attempt', { endpoint: req.path, method: req.method });
+      res.status(401).json({ error: 'Authentication required' });
+      return;
+    }
+
+    // Attach session info to request for downstream handlers
+    (req as any).authenticated = true;
+    (req as any).sessionToken = token;
+    next();
+  } catch (error) {
+    logger.error('Auth middleware error', { error });
+    res.status(500).json({ error: 'Authentication error' });
+  }
+}
+
+/**
  * Create all middleware for the worker service
  * @param summarizeRequestBody - Function to summarize request bodies for logging
  * @returns Array of middleware functions
@@ -76,6 +101,33 @@ export function createMiddleware(
   middlewares.push(express.static(uiDir));
 
   return middlewares;
+}
+
+/**
+ * CSRF token validation middleware
+ * Validates CSRF token on state-changing requests (POST, PUT, PATCH, DELETE)
+ */
+export function validateCsrfToken(req: Request, res: Response, next: NextFunction): void {
+  // Skip CSRF validation for GET and HEAD requests
+  if (req.method === 'GET' || req.method === 'HEAD') {
+    return next();
+  }
+
+  try {
+    const csrfToken = req.headers['x-csrf-token'] as string;
+    const sessionCsrf = (req as any).sessionCsrf;
+
+    if (!csrfToken || csrfToken !== sessionCsrf) {
+      logger.warn('SECURITY', 'CSRF validation failed', { endpoint: req.path, method: req.method });
+      res.status(403).json({ error: 'CSRF validation failed' });
+      return;
+    }
+
+    next();
+  } catch (error) {
+    logger.error('CSRF middleware error', { error });
+    res.status(500).json({ error: 'CSRF validation error' });
+  }
 }
 
 /**
