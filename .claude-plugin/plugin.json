@@ -13,5 +13,14 @@
     "persistence",
     "hooks",
     "mcp"
-  ]
+  ],
+  "backend": {
+    "type": "python",
+    "entry_point": "agent_mem.backend:main"
+  },
+  "capabilities": {
+    "memory_compression": true,
+    "context_persistence": true,
+    "mcp_handler": true
+  }
 }
