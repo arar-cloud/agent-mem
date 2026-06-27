@@ -115,8 +115,9 @@ async function sessionResume() {
         console.log(`[Session 1] ID: ${sessionId}`);
       }
       if (msg.type === 'assistant') {
-        const text = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
-        console.log(`[Session 1] Claude: ${text?.text}\n`);
+        const text = extractTextContent(msg);
+        console.log(`[Session 1] Claude: ${text}\n`);
+        break; // Exit loop after handling assistant message
       }
     }
   }
@@ -131,8 +132,9 @@ async function sessionResume() {
 
     for await (const msg of session.receive()) {
       if (msg.type === 'assistant') {
-        const text = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
-        console.log(`[Session 2] Claude: ${text?.text}`);
+        const text = extractTextContent(msg);
+        console.log(`[Session 2] Claude: ${text}`);
+        break; // Exit loop after handling assistant message
       }
     }
   }
