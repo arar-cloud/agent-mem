@@ -70,6 +70,7 @@ async function multiTurn() {
     if (msg.type === 'assistant') {
       const text = extractTextContent(msg);
       console.log(`Turn 1: ${text}`);
+      break; // Exit loop after handling assistant message
     }
   }
 
@@ -79,6 +80,7 @@ async function multiTurn() {
     if (msg.type === 'assistant') {
       const text = extractTextContent(msg);
       console.log(`Turn 2: ${text}`);
+      break; // Exit loop after handling assistant message
     }
   }
 }
