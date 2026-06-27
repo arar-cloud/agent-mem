@@ -57,8 +57,8 @@ async function basicSession() {
 
   for await (const msg of session.receive()) {
     if (msg.type === 'assistant') {
-      const text = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
-      console.log(`Claude: ${text?.text}`);
+      const content = parseMessageContent(msg.message);
+      if (content) console.log(`Claude: ${content}`);
     }
   }
 }
@@ -73,8 +73,8 @@ async function multiTurn() {
   await session.send('What is 5 + 3? Just the number.');
   for await (const msg of session.receive()) {
     if (msg.type === 'assistant') {
-      const text = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
-      console.log(`Turn 1: ${text?.text}`);
+      const content = parseMessageContent(msg.message);
+      if (content) console.log(`Turn 1: ${content}`);
     }
   }
 
@@ -82,8 +82,8 @@ async function multiTurn() {
   await session.send('Multiply that by 2. Just the number.');
   for await (const msg of session.receive()) {
     if (msg.type === 'assistant') {
-      const text = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
-      console.log(`Turn 2: ${text?.text}`);
+      const content = parseMessageContent(msg.message);
+      if (content) console.log(`Turn 2: ${content}`);
     }
   }
 }
