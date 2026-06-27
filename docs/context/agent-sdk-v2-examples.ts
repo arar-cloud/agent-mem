@@ -11,6 +11,22 @@ import {
   unstable_v2_prompt,
 } from '@anthropic-ai/claude-agent-sdk';
 
+/**
+ * Parse message content from SDK response with type safety.
+ * Shared helper to avoid redundant type guards and array searches.
+ * @param message - Raw SDK message object
+ * @returns Extracted content string or undefined
+ */
+function parseMessageContent(message: any): string | undefined {
+  if (message?.content && Array.isArray(message.content)) {
+    const textBlock = message.content.find(
+      (block: any) => block.type === 'text' && typeof block.text === 'string'
+    );
+    return textBlock?.text;
+  }
+  return undefined;
+}
+
 async function main() {
   const example = process.argv[2] || 'basic';
 
