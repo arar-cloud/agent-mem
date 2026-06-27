@@ -7,6 +7,19 @@ description: "Configure Claude-Mem behavior and language with the Mode System"
 
 Claude-Mem uses a flexible **Mode System** to adapt its behavior, observation types, and output language. This allows you to switch between different workflows (like coding vs. email investigation) or languages without reinstalling the plugin.
 
+## Performance Note: Text Extraction Optimization
+
+The session management functions (basicSession, multiTurn, sessionResume) extract assistant text messages from async message streams. To avoid redundant filtering and type-checking on every message, text extraction is centralized into a reusable utility function:
+
+```typescript
+// Utility: Extract assistant text message from message array
+function extractAssistantText(messages: Message[]): string | undefined {
+  return messages.find(m => m.role === 'assistant' && m.type === 'text')?.content;
+}
+```
+
+This single function is used across all session handlers instead of repeating the find()+type guard pattern, reducing CPU overhead and improving iteration performance.
+
 ## What is a Mode?
 
 A "mode" is a configuration profile that defines:
