@@ -1,7 +1,8 @@
 /**
  * Claude Agent SDK V2 Examples
  *
- * The V2 API provides a session-based interface with separate send()/receive(),
+ * The V2 API provides a withTimeout(
+    session-based interface with separate send()/receive(),
  * ideal for multi-turn conversations. Run with: npx tsx v2-examples.ts
  */
 
@@ -10,6 +11,53 @@ import {
   unstable_v2_resumeSession,
   unstable_v2_prompt,
 } from '@anthropic-ai/claude-agent-sdk';
+
+/**
+ * Parse message content from SDK response with type safety.
+ * Shared helper to avoid redundant type guards and array searches.
+ * @param message - Raw SDK message object
+ * @returns Extracted content string or undefined
+ */
+function parseMessageContent(message: any): string | undefined {
+  if (message?.content && Array.isArray(message.content)) {
+    const textBlock = message.content.find(
+      (block: any) => block.type === 'text' && typeof block.text === 'string'
+    );
+    return textBlock?.text;
+  }
+  return undefined;
+}
+
+// Timeout configuration (in milliseconds)
+const SESSION_TIMEOUT = 30000; // 30 seconds
+const RECEIVE_TIMEOUT = 60000; // 60 seconds for streaming responses
+
+/**
+ * Wrap async operation with AbortController timeout.
+ * Prevents indefinite hangs and enables graceful cancellation.
+ * @param promise - Promise to execute
+ * @param timeoutMs - Timeout in milliseconds
+ * @param operationName - Name for error messages
+ * @returns Promise that rejects if timeout exceeded
+ */
+async function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  operationName: string = 'Operation'
+): Promise<T> {
+  let timeoutHandle: NodeJS.Timeout;
+  const timeoutPromise = new Promise<T>((_, reject) => {
+    timeoutHandle = setTimeout(
+      () => reject(new Error(`${operationName} timed out after ${timeoutMs}ms`)),
+      timeoutMs
+    );
+  });
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    clearTimeout(timeoutHandle);
+  }
+}
 
 async function main() {
   const example = process.argv[2] || 'basic';
@@ -41,8 +89,8 @@ async function basicSession() {
 
   for await (const msg of session.receive()) {
     if (msg.type === 'assistant') {
-      const text = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
-      console.log(`Claude: ${text?.text}`);
+      const content = parseMessageContent(msg.message);
+      if (content) console.log(`Claude: ${content}`);
     }
   }
 }
@@ -57,8 +105,8 @@ async function multiTurn() {
   await session.send('What is 5 + 3? Just the number.');
   for await (const msg of session.receive()) {
     if (msg.type === 'assistant') {
-      const text = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
-      console.log(`Turn 1: ${text?.text}`);
+      const content = parseMessageContent(msg.message);
+      if (content) console.log(`Turn 1: ${content}`);
     }
   }
 
@@ -66,8 +114,8 @@ async function multiTurn() {
   await session.send('Multiply that by 2. Just the number.');
   for await (const msg of session.receive()) {
     if (msg.type === 'assistant') {
-      const text = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
-      console.log(`Turn 2: ${text?.text}`);
+      const content = parseMessageContent(msg.message);
+      if (content) console.log(`Turn 2: ${content}`);
     }
   }
 }

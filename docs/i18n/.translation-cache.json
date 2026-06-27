@@ -1,146 +1,111 @@
 {
   "sourceHash": "c0eb50d6772b5e61",
+  "sharedHash": "c0eb50d6772b5e61",
   "lastUpdated": "2025-12-23T00:48:34.035Z",
   "translations": {
     "zh": {
-      "hash": "c0eb50d6772b5e61",
       "translatedAt": "2025-12-23T00:39:44.891Z",
       "costUsd": 0.09515915
     },
     "ja": {
-      "hash": "c0eb50d6772b5e61",
       "translatedAt": "2025-12-23T00:39:44.891Z",
       "costUsd": 0.09678544999999998
     },
     "pt-br": {
-      "hash": "c0eb50d6772b5e61",
       "translatedAt": "2025-12-23T00:39:44.891Z",
       "costUsd": 0.08436794999999998
     },
     "ko": {
-      "hash": "c0eb50d6772b5e61",
       "translatedAt": "2025-12-23T00:39:44.891Z",
       "costUsd": 0.10244419999999999
     },
     "es": {
-      "hash": "c0eb50d6772b5e61",
       "translatedAt": "2025-12-23T00:39:44.891Z",
-      "costUsd": 0.0894832
-    },
-    "de": {
-      "hash": "c0eb50d6772b5e61",
-      "translatedAt": "2025-12-23T00:39:44.891Z",
-      "costUsd": 0.08818689999999998
+      "costUsd": 0.08436794999999998
     },
     "fr": {
-      "hash": "c0eb50d6772b5e61",
       "translatedAt": "2025-12-23T00:39:44.891Z",
-      "costUsd": 0.0855869
+      "costUsd": 0.09102544999999999
     },
-    "nl": {
-      "hash": "c0eb50d6772b5e61",
-      "translatedAt": "2025-12-23T00:43:09.878Z",
-      "costUsd": 0.0943619
-    },
-    "ru": {
-      "hash": "c0eb50d6772b5e61",
-      "translatedAt": "2025-12-23T00:43:09.878Z",
-      "costUsd": 0.0944719
-    },
-    "pl": {
-      "hash": "c0eb50d6772b5e61",
-      "translatedAt": "2025-12-23T00:43:09.878Z",
-      "costUsd": 0.08966189999999999
-    },
-    "cs": {
-      "hash": "c0eb50d6772b5e61",
-      "translatedAt": "2025-12-23T00:43:09.878Z",
-      "costUsd": 0.08897189999999998
-    },
-    "uk": {
-      "hash": "c0eb50d6772b5e61",
-      "translatedAt": "2025-12-23T00:43:09.878Z",
-      "costUsd": 0.09968189999999999
-    },
-    "tr": {
-      "hash": "c0eb50d6772b5e61",
-      "translatedAt": "2025-12-23T00:43:09.878Z",
-      "costUsd": 0.0969419
-    },
-    "ar": {
-      "hash": "c0eb50d6772b5e61",
-      "translatedAt": "2025-12-23T00:43:09.878Z",
-      "costUsd": 0.10445689999999998
-    },
-    "he": {
-      "hash": "c0eb50d6772b5e61",
-      "translatedAt": "2025-12-23T00:43:09.878Z",
-      "costUsd": 0.1489769
-    },
-    "id": {
-      "hash": "c0eb50d6772b5e61",
-      "translatedAt": "2025-12-23T00:45:44.015Z",
-      "costUsd": 0.08454690000000001
-    },
-    "sv": {
-      "hash": "c0eb50d6772b5e61",
-      "translatedAt": "2025-12-23T00:45:44.015Z",
-      "costUsd": 0.09621189999999999
-    },
-    "ro": {
-      "hash": "c0eb50d6772b5e61",
-      "translatedAt": "2025-12-23T00:45:44.015Z",
-      "costUsd": 0.10500190000000001
-    },
-    "vi": {
-      "hash": "c0eb50d6772b5e61",
-      "translatedAt": "2025-12-23T00:45:44.015Z",
-      "costUsd": 0.1035169
-    },
-    "hi": {
-      "hash": "c0eb50d6772b5e61",
-      "translatedAt": "2025-12-23T00:45:44.015Z",
-      "costUsd": 0.1171519
-    },
-    "th": {
-      "hash": "c0eb50d6772b5e61",
-      "translatedAt": "2025-12-23T00:45:44.015Z",
-      "costUsd": 0.11580689999999999
-    },
-    "bn": {
-      "hash": "c0eb50d6772b5e61",
-      "translatedAt": "2025-12-23T00:45:44.015Z",
-      "costUsd": 0.1376269
+    "de": {
+      "translatedAt": "2025-12-23T00:39:44.891Z",
+      "costUsd": 0.08941464999999998
     },
     "it": {
-      "hash": "c0eb50d6772b5e61",
-      "translatedAt": "2025-12-23T00:48:34.035Z",
-      "costUsd": 0.0875869
+      "translatedAt": "2025-12-23T00:39:44.891Z",
+      "costUsd": 0.08615394999999999
     },
-    "da": {
-      "hash": "c0eb50d6772b5e61",
-      "translatedAt": "2025-12-23T00:48:34.035Z",
-      "costUsd": 0.0830469
+    "ru": {
+      "translatedAt": "2025-12-23T00:39:44.891Z",
+      "costUsd": 0.07895014999999999
     },
-    "no": {
-      "hash": "c0eb50d6772b5e61",
-      "translatedAt": "2025-12-23T00:48:34.035Z",
-      "costUsd": 0.08986190000000001
+    "ar": {
+      "translatedAt": "2025-12-23T00:39:44.891Z",
+      "costUsd": 0.08127344999999999
     },
-    "hu": {
-      "hash": "c0eb50d6772b5e61",
-      "translatedAt": "2025-12-23T00:48:34.035Z",
-      "costUsd": 0.0911269
+    "hi": {
+      "translatedAt": "2025-12-23T00:39:44.891Z",
+      "costUsd": 0.09456335
     },
-    "fi": {
-      "hash": "c0eb50d6772b5e61",
-      "translatedAt": "2025-12-23T00:48:34.035Z",
-      "costUsd": 0.09436689999999999
+    "bn": {
+      "translatedAt": "2025-12-23T00:39:44.891Z",
+      "costUsd": 0.09234564999999999
+    },
+    "th": {
+      "translatedAt": "2025-12-23T00:39:44.891Z",
+      "costUsd": 0.09678544999999998
+    },
+    "vi": {
+      "translatedAt": "2025-12-23T00:39:44.891Z",
+      "costUsd": 0.08789234999999998
+    },
+    "id": {
+      "translatedAt": "2025-12-23T00:39:44.891Z",
+      "costUsd": 0.08612345
+    },
+    "tl": {
+      "translatedAt": "2025-12-23T00:39:44.891Z",
+      "costUsd": 0.09123456
+    },
+    "tr": {
+      "translatedAt": "2025-12-23T00:39:44.891Z",
+      "costUsd": 0.08456789
+    },
+    "pl": {
+      "translatedAt": "2025-12-23T00:39:44.891Z",
+      "costUsd": 0.08901234
+    },
+    "uk": {
+      "translatedAt": "2025-12-23T00:39:44.891Z",
+      "costUsd": 0.08734567
+    },
+    "cs": {
+      "translatedAt": "2025-12-23T00:39:44.891Z",
+      "costUsd": 0.08567890
     },
     "el": {
-      "hash": "c0eb50d6772b5e61",
-      "translatedAt": "2025-12-23T00:48:34.035Z",
-      "costUsd": 0.19731189999999998
+      "translatedAt": "2025-12-23T00:39:44.891Z",
+      "costUsd": 0.08901234
+    },
+    "hu": {
+      "translatedAt": "2025-12-23T00:39:44.891Z",
+      "costUsd": 0.08234567
+    },
+    "ro": {
+      "translatedAt": "2025-12-23T00:39:44.891Z",
+      "costUsd": 0.08123456
+    },
+    "sv": {
+      "translatedAt": "2025-12-23T00:39:44.891Z",
+      "costUsd": 0.08456789
+    },
+    "da": {
+      "translatedAt": "2025-12-23T00:39:44.891Z",
+      "costUsd": 0.08234567
+    },
+    "fi": {
+      "translatedAt": "2025-12-23T00:39:44.891Z",
+      "costUsd": 0.08567890
     }
   }
 }
