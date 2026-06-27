@@ -27,6 +27,37 @@ function parseMessageContent(message: any): string | undefined {
   return undefined;
 }
 
+// Timeout configuration (in milliseconds)
+const SESSION_TIMEOUT = 30000; // 30 seconds
+const RECEIVE_TIMEOUT = 60000; // 60 seconds for streaming responses
+
+/**
+ * Wrap async operation with AbortController timeout.
+ * Prevents indefinite hangs and enables graceful cancellation.
+ * @param promise - Promise to execute
+ * @param timeoutMs - Timeout in milliseconds
+ * @param operationName - Name for error messages
+ * @returns Promise that rejects if timeout exceeded
+ */
+async function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  operationName: string = 'Operation'
+): Promise<T> {
+  let timeoutHandle: NodeJS.Timeout;
+  const timeoutPromise = new Promise<T>((_, reject) => {
+    timeoutHandle = setTimeout(
+      () => reject(new Error(`${operationName} timed out after ${timeoutMs}ms`)),
+      timeoutMs
+    );
+  });
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    clearTimeout(timeoutHandle);
+  }
+}
+
 async function main() {
   const example = process.argv[2] || 'basic';
 
