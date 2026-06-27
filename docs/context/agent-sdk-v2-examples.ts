@@ -11,6 +11,17 @@ import {
   unstable_v2_prompt,
 } from '@anthropic-ai/claude-agent-sdk';
 
+/**
+ * Utility function to extract text content from a message.
+ * Eliminates redundant filtering and type checking in receive loops.
+ */
+function extractTextContent(message: any): string | null {
+  const textContent = message.message.content.find(
+    (c: any): c is { type: 'text'; text: string } => c.type === 'text'
+  );
+  return textContent?.text || null;
+}
+
 async function main() {
   const example = process.argv[2] || 'basic';
 
