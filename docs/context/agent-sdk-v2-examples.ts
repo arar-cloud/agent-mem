@@ -1,7 +1,8 @@
 /**
  * Claude Agent SDK V2 Examples
  *
- * The V2 API provides a session-based interface with separate send()/receive(),
+ * The V2 API provides a withTimeout(
+    session-based interface with separate send()/receive(),
  * ideal for multi-turn conversations. Run with: npx tsx v2-examples.ts
  */
 
