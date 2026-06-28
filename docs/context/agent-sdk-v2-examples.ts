@@ -45,18 +45,18 @@ async function main() {
   }
 }
 
-// Basic session with send/receive pattern
+// Basic session with send/receive pattern (Promise-based single message collection)
 async function basicSession() {
   console.log('=== Basic Session ===\n');
 
   await using session = unstable_v2_createSession({ model: 'sonnet' });
   await session.send('Hello! Introduce yourself in one sentence.');
 
-  for await (const msg of session.receive()) {
-    if (msg.type === 'assistant') {
-      const text = extractTextMessage([{ type: 'text', text: msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text')?.text }], 'text');
-      console.log(`Claude: ${text}`);
-    }
+  // Receive single message batch via Promise instead of async generator to reduce overhead
+  const msg = await session.receiveNext();
+  if (msg.type === 'assistant') {
+    const text = extractTextMessage([{ type: 'text', text: msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text')?.text }], 'text');
+    console.log(`Claude: ${text}`);
   }
 }
 
@@ -85,7 +85,7 @@ async function multiTurn() {
   }
 }
 
-// One-shot convenience function
+// One-shot convenience function (Promise-based message collection)
 async function oneShot() {
   console.log('=== One-Shot Prompt ===\n');
 
@@ -93,7 +93,7 @@ async function oneShot() {
 
   if (result.subtype === 'success') {
     console.log(`Answer: ${result.result}`);
-    console.log(`Cost: $${result.total_cost_usd.toFixed(4)}`);
+    console.log(`Cost: ${result.total_cost_usd.toFixed(4)}`);
   }
 }
 
