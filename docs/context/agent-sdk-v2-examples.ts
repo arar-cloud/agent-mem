@@ -54,8 +54,8 @@ async function basicSession() {
 
   for await (const msg of session.receive()) {
     if (msg.type === 'assistant') {
-      const text = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
-      console.log(`Claude: ${text?.text}`);
+      const text = extractTextMessage([{ type: 'text', text: msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text')?.text }], 'text');
+      console.log(`Claude: ${text}`);
     }
   }
 }
@@ -70,8 +70,8 @@ async function multiTurn() {
   await session.send('What is 5 + 3? Just the number.');
   for await (const msg of session.receive()) {
     if (msg.type === 'assistant') {
-      const text = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
-      console.log(`Turn 1: ${text?.text}`);
+      const textBlock = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
+      console.log(`Turn 1: ${textBlock?.text}`);
     }
   }
 
@@ -79,8 +79,8 @@ async function multiTurn() {
   await session.send('Multiply that by 2. Just the number.');
   for await (const msg of session.receive()) {
     if (msg.type === 'assistant') {
-      const text = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
-      console.log(`Turn 2: ${text?.text}`);
+      const textBlock = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
+      console.log(`Turn 2: ${textBlock?.text}`);
     }
   }
 }
@@ -115,8 +115,8 @@ async function sessionResume() {
         console.log(`[Session 1] ID: ${sessionId}`);
       }
       if (msg.type === 'assistant') {
-        const text = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
-        console.log(`[Session 1] Claude: ${text?.text}\n`);
+        const textBlock = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
+        console.log(`[Session 1] Claude: ${textBlock?.text}\n`);
       }
     }
   }
@@ -131,8 +131,8 @@ async function sessionResume() {
 
     for await (const msg of session.receive()) {
       if (msg.type === 'assistant') {
-        const text = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
-        console.log(`[Session 2] Claude: ${text?.text}`);
+        const textBlock = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
+        console.log(`[Session 2] Claude: ${textBlock?.text}`);
       }
     }
   }
