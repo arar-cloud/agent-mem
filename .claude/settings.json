@@ -18,6 +18,10 @@
     }
   },
   "permissions": {
+    "allow": [
+      "Read(./package-lock.json)",
+      "Read(./package.json)"
+    ],
     "deny": [
       "Read(./node_modules/**)",
       "Read(./.DS_Store)"
