@@ -47,6 +47,17 @@
         "closeConnections": true,
         "cancelPendingTasks": true
       }
+    },
+    "retryPolicy": {
+      "persistenceWrites": {
+        "enabled": true,
+        "maxAttempts": 5,
+        "backoffStrategy": "exponential",
+        "initialBackoffMs": 50,
+        "maxBackoffMs": 10000,
+        "backoffMultiplier": 2,
+        "jitterEnabled": true
+      }
     }
   }
 }
