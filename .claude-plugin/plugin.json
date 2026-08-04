@@ -63,6 +63,15 @@
         "backoffMultiplier": 2,
         "jitterEnabled": true
       }
+    },
+    "stateValidation": {
+      "enabled": true,
+      "checksumAlgorithm": "sha256",
+      "validateOnSessionBoundary": true,
+      "validateOnRestore": true,
+      "corruptionRecovery": "fallback-to-cache",
+      "persistChecksum": true,
+      "checksumVerifyInterval": 5000
     }
   }
 }
