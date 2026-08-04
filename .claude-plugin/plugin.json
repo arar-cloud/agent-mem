@@ -40,7 +40,15 @@
         "writeAheadLogging": true,
         "logDirectory": "./.claude-plugin/logs",
         "rollbackOnFailure": true
-      }
+      },
+      "maxBufferSize": 52428800,
+      "overflowHandling": "reject-new-entries",
+      "writeAheadLog": {
+        "enabled": true,
+        "location": ".compression-wal",
+        "durability": "fsync"
+      },
+      "transactionTimeout": 60000
     },
     "lifecycle": {
       "gracefulShutdown": true,
