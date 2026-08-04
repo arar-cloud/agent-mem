@@ -36,6 +36,14 @@
         "failureThreshold": 5,
         "resetTimeout": 60000,
         "halfOpenRequests": 2
+      },
+      "memoryLimits": {
+        "maxCompressionBufferSize": 52428800,
+        "maxCompressionBufferSizeUnit": "bytes",
+        "overflowStrategy": "error-and-fallback",
+        "monitoringInterval": 10000,
+        "enableMemoryWarnings": true,
+        "warningThresholdPercent": 80
       }
     }
   ]
