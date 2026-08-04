@@ -13,6 +13,11 @@
       "version": "10.5.6",
       "source": "./plugin",
       "description": "Persistent memory system for Claude Code - context compression across sessions",
+      "versionValidation": {
+        "checkPluginJsonVersion": true,
+        "allowedVersionDrift": 0,
+        "validationOnDeploy": true
+      },
       "stateValidation": {
         "enabled": true,
         "checksumAlgorithm": "sha256",
