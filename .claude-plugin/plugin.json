@@ -15,6 +15,11 @@
     "mcp"
   ],
   "reliability": {
+    "versionControl": {
+      "expectedVersion": "10.5.6",
+      "validateOnLoad": true,
+      "mismatchAction": "fail-safe"
+    },
     "initialization": {
       "retryPolicy": {
         "maxAttempts": 3,
