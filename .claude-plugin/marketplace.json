@@ -18,6 +18,13 @@
         "checksumAlgorithm": "sha256",
         "validateOnSessionBoundary": true,
         "corruptionRecovery": "fallback-to-cache"
+      },
+      "concurrency": {
+        "lockingEnabled": true,
+        "lockType": "distributed-mutex",
+        "serializationMode": "fifo",
+        "maxConcurrentWriters": 1,
+        "deadlockDetection": true
       }
     }
   ]
