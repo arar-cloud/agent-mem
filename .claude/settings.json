@@ -1,5 +1,10 @@
 {
   "env": {},
+  "logging": {
+    "enabled": true,
+    "level": "debug",
+    "correlationIdEnabled": true
+  },
   "permissions": {
     "deny": [
       "Read(./node_modules/**)",
