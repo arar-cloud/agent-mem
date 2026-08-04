@@ -28,6 +28,14 @@
       "enabled": true,
       "interval": 60000,
       "endpoint": "/health"
+    },
+    "compression": {
+      "transactions": {
+        "enabled": true,
+        "writeAheadLogging": true,
+        "logDirectory": "./.claude-plugin/logs",
+        "rollbackOnFailure": true
+      }
     }
   }
 }
