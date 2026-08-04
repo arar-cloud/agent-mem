@@ -35,6 +35,19 @@
       "endpoint": "/health"
     },
     "compression": {
+      "timeout": {
+        "enabled": true,
+        "defaultMs": 30000,
+        "hardLimitMs": 60000,
+        "enforceUnder": "abort-and-recover"
+      },
+      "circuitBreaker": {
+        "enabled": true,
+        "failureThreshold": 5,
+        "successThreshold": 2,
+        "timeout": 30000,
+        "halfOpenRequests": 1
+      },
       "transactions": {
         "enabled": true,
         "writeAheadLogging": true,
