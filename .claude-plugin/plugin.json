@@ -22,9 +22,12 @@
     },
     "initialization": {
       "retryPolicy": {
-        "maxAttempts": 3,
+        "maxAttempts": 5,
         "backoffMultiplier": 2,
-        "initialDelayMs": 100
+        "initialDelayMs": 100,
+        "maxDelayMs": 10000,
+        "jitterFactor": 0.1,
+        "strategy": "exponential-backoff"
       },
       "timeout": 30000,
       "fallbackMode": "memory-only"
