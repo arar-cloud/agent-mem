@@ -109,6 +109,21 @@
       "corruptionRecovery": "fallback-to-cache",
       "persistChecksum": true,
       "checksumVerifyInterval": 5000
+    },
+    "concurrency": {
+      "lockingEnabled": true,
+      "lockType": "distributed-mutex",
+      "serialization": {
+        "enabled": true,
+        "maxConcurrentWrites": 1,
+        "writeQueueing": true
+      },
+      "lockTimeout": 10000,
+      "deadlockDetection": true,
+      "contextMutex": {
+        "sharedStateProtection": true,
+        "parallelAgentAccess": "serialized"
+      }
     }
   }
 }
