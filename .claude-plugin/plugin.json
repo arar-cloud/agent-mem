@@ -1,6 +1,6 @@
 {
   "name": "claude-mem",
-  "version": "10.4.1",
+  "version": "10.5.6",
   "description": "Persistent memory system for Claude Code - seamlessly preserve context across sessions",
   "author": {
     "name": "Alex Newman"
@@ -13,5 +13,117 @@
     "persistence",
     "hooks",
     "mcp"
-  ]
+  ],
+  "lifecycle": {
+    "hooks": {
+      "onLoad": "initializeState",
+      "onUnload": "gracefulShutdown",
+      "onCleanup": "releaseResources"
+    },
+    "gracefulShutdown": {
+      "enabled": true,
+      "timeout": 15000,
+      "forceKillAfter": 20000,
+      "flushPendingTasks": true
+    }
+  },
+  "reliability": {
+    "versionControl": {
+      "expectedVersion": "10.5.6",
+      "validateOnLoad": true,
+      "mismatchAction": "fail-safe"
+    },
+    "initialization": {
+      "retryPolicy": {
+        "maxAttempts": 5,
+        "backoffMultiplier": 2,
+        "initialDelayMs": 100,
+        "maxDelayMs": 10000,
+        "jitterFactor": 0.1,
+        "strategy": "exponential-backoff"
+      },
+      "timeout": 30000,
+      "fallbackMode": "memory-only"
+    },
+    "healthCheck": {
+      "enabled": true,
+      "interval": 60000,
+      "endpoint": "/health"
+    },
+    "compression": {
+      "timeout": {
+        "enabled": true,
+        "defaultMs": 30000,
+        "hardLimitMs": 60000,
+        "enforceUnder": "abort-and-recover"
+      },
+      "circuitBreaker": {
+        "enabled": true,
+        "failureThreshold": 5,
+        "successThreshold": 2,
+        "timeout": 30000,
+        "halfOpenRequests": 1
+      },
+      "transactions": {
+        "enabled": true,
+        "writeAheadLogging": true,
+        "logDirectory": "./.claude-plugin/logs",
+        "rollbackOnFailure": true
+      },
+      "maxBufferSize": 52428800,
+      "overflowHandling": "reject-new-entries",
+      "writeAheadLog": {
+        "enabled": true,
+        "location": ".compression-wal",
+        "durability": "fsync"
+      },
+      "transactionTimeout": 60000
+    },
+    "lifecycle": {
+      "gracefulShutdown": true,
+      "shutdownTimeout": 15000,
+      "unloadHook": "onUnload",
+      "cleanupHook": "onCleanup",
+      "resourceCleanup": {
+        "flushPendingWrites": true,
+        "closeConnections": true,
+        "cancelPendingTasks": true
+      }
+    },
+    "retryPolicy": {
+      "persistenceWrites": {
+        "enabled": true,
+        "maxAttempts": 5,
+        "backoffStrategy": "exponential",
+        "initialBackoffMs": 50,
+        "maxBackoffMs": 10000,
+        "backoffMultiplier": 2,
+        "jitterEnabled": true
+      }
+    },
+    "stateValidation": {
+      "enabled": true,
+      "checksumAlgorithm": "sha256",
+      "validateOnSessionBoundary": true,
+      "validateOnRestore": true,
+      "corruptionRecovery": "fallback-to-cache",
+      "persistChecksum": true,
+      "checksumVerifyInterval": 5000
+    },
+    "concurrency": {
+      "lockingEnabled": true,
+      "lockType": "distributed-mutex",
+      "serialization": {
+        "enabled": true,
+        "maxConcurrentWrites": 1,
+        "writeQueueing": true
+      },
+      "lockTimeout": 10000,
+      "deadlockDetection": true,
+      "contextMutex": {
+        "sharedStateProtection": true,
+        "parallelAgentAccess": "serialized"
+      }
+    }
+  }
 }

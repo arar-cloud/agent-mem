@@ -1,8 +1,28 @@
 {
   "env": {},
+  "logging": {
+    "enabled": true,
+    "level": "debug",
+    "correlationIdEnabled": true,
+    "correlationIdFormat": "uuid",
+    "tracing": {
+      "enabled": true,
+      "captureRequestFlow": true,
+      "captureSessionBoundary": true,
+      "flushInterval": 5000
+    },
+    "metricsInstrumentation": {
+      "enabled": true,
+      "captureCompressionMetrics": true,
+      "capturePersistenceLatency": true
+    }
+  },
   "permissions": {
-    "deny": [
+    "allow": [
       "Read(./package-lock.json)",
+      "Read(./package.json)"
+    ],
+    "deny": [
       "Read(./node_modules/**)",
       "Read(./.DS_Store)"
     ]

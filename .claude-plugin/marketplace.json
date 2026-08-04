@@ -12,7 +12,44 @@
       "name": "claude-mem",
       "version": "10.5.6",
       "source": "./plugin",
-      "description": "Persistent memory system for Claude Code - context compression across sessions"
+      "description": "Persistent memory system for Claude Code - context compression across sessions",
+      "versionValidation": {
+        "checkPluginJsonVersion": true,
+        "allowedVersionDrift": 0,
+        "validationOnDeploy": true
+      },
+      "stateValidation": {
+        "enabled": true,
+        "checksumAlgorithm": "sha256",
+        "validateOnSessionBoundary": true,
+        "corruptionRecovery": "fallback-to-cache"
+      },
+      "concurrency": {
+        "lockingEnabled": true,
+        "lockType": "distributed-mutex",
+        "serializationMode": "fifo",
+        "maxConcurrentWriters": 1,
+        "deadlockDetection": true
+      },
+      "operationTimeout": {
+        "compression": 60000,
+        "persistence": 45000,
+        "stateValidation": 30000
+      },
+      "circuitBreaker": {
+        "enabled": true,
+        "failureThreshold": 5,
+        "resetTimeout": 60000,
+        "halfOpenRequests": 2
+      },
+      "memoryLimits": {
+        "maxCompressionBufferSize": 52428800,
+        "maxCompressionBufferSizeUnit": "bytes",
+        "overflowStrategy": "error-and-fallback",
+        "monitoringInterval": 10000,
+        "enableMemoryWarnings": true,
+        "warningThresholdPercent": 80
+      }
     }
   ]
 }

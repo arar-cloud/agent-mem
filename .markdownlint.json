@@ -1,3 +1,23 @@
 {
   "MD013": false
+,
+  "stability": {
+    "enabled": true,
+    "checks": {
+      "crashScenarios": true,
+      "retryBehavior": true,
+      "stateConsistency": true,
+      "concurrencyRaces": true,
+      "memoryLeaks": true,
+      "resourceCleanup": true
+    }
+  },
+  "reliability": {
+    "validation": {
+      "transactionSemantics": true,
+      "errorHandling": true,
+      "timeoutEnforcement": true,
+      "circuitBreakerBehavior": true
+    }
+  }
 }
