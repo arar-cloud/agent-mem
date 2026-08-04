@@ -14,6 +14,19 @@
     "hooks",
     "mcp"
   ],
+  "lifecycle": {
+    "hooks": {
+      "onLoad": "initializeState",
+      "onUnload": "gracefulShutdown",
+      "onCleanup": "releaseResources"
+    },
+    "gracefulShutdown": {
+      "enabled": true,
+      "timeout": 15000,
+      "forceKillAfter": 20000,
+      "flushPendingTasks": true
+    }
+  },
   "reliability": {
     "versionControl": {
       "expectedVersion": "10.5.6",
