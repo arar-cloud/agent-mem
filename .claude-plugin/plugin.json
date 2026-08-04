@@ -36,6 +36,17 @@
         "logDirectory": "./.claude-plugin/logs",
         "rollbackOnFailure": true
       }
+    },
+    "lifecycle": {
+      "gracefulShutdown": true,
+      "shutdownTimeout": 15000,
+      "unloadHook": "onUnload",
+      "cleanupHook": "onCleanup",
+      "resourceCleanup": {
+        "flushPendingWrites": true,
+        "closeConnections": true,
+        "cancelPendingTasks": true
+      }
     }
   }
 }
