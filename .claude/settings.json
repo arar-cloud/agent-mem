@@ -3,7 +3,19 @@
   "logging": {
     "enabled": true,
     "level": "debug",
-    "correlationIdEnabled": true
+    "correlationIdEnabled": true,
+    "correlationIdFormat": "uuid",
+    "tracing": {
+      "enabled": true,
+      "captureRequestFlow": true,
+      "captureSessionBoundary": true,
+      "flushInterval": 5000
+    },
+    "metricsInstrumentation": {
+      "enabled": true,
+      "captureCompressionMetrics": true,
+      "capturePersistenceLatency": true
+    }
   },
   "permissions": {
     "deny": [
