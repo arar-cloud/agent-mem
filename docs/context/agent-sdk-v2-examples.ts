@@ -11,6 +11,17 @@ import {
   unstable_v2_prompt,
 } from '@anthropic-ai/claude-agent-sdk';
 
+/**
+ * Utility function to extract text content from a message.
+ * Eliminates redundant filtering and type checking in receive loops.
+ */
+function extractTextContent(message: any): string | null {
+  const textContent = message.message.content.find(
+    (c: any): c is { type: 'text'; text: string } => c.type === 'text'
+  );
+  return textContent?.text || null;
+}
+
 async function main() {
   const example = process.argv[2] || 'basic';
 
@@ -41,8 +52,8 @@ async function basicSession() {
 
   for await (const msg of session.receive()) {
     if (msg.type === 'assistant') {
-      const text = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
-      console.log(`Claude: ${text?.text}`);
+      const text = extractTextContent(msg);
+      console.log(`Claude: ${text}`);
     }
   }
 }
@@ -57,8 +68,9 @@ async function multiTurn() {
   await session.send('What is 5 + 3? Just the number.');
   for await (const msg of session.receive()) {
     if (msg.type === 'assistant') {
-      const text = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
-      console.log(`Turn 1: ${text?.text}`);
+      const text = extractTextContent(msg);
+      console.log(`Turn 1: ${text}`);
+      break; // Exit loop after handling assistant message
     }
   }
 
@@ -66,8 +78,9 @@ async function multiTurn() {
   await session.send('Multiply that by 2. Just the number.');
   for await (const msg of session.receive()) {
     if (msg.type === 'assistant') {
-      const text = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
-      console.log(`Turn 2: ${text?.text}`);
+      const text = extractTextContent(msg);
+      console.log(`Turn 2: ${text}`);
+      break; // Exit loop after handling assistant message
     }
   }
 }
@@ -102,8 +115,9 @@ async function sessionResume() {
         console.log(`[Session 1] ID: ${sessionId}`);
       }
       if (msg.type === 'assistant') {
-        const text = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
-        console.log(`[Session 1] Claude: ${text?.text}\n`);
+        const text = extractTextContent(msg);
+        console.log(`[Session 1] Claude: ${text}\n`);
+        break; // Exit loop after handling assistant message
       }
     }
   }
@@ -118,8 +132,9 @@ async function sessionResume() {
 
     for await (const msg of session.receive()) {
       if (msg.type === 'assistant') {
-        const text = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
-        console.log(`[Session 2] Claude: ${text?.text}`);
+        const text = extractTextContent(msg);
+        console.log(`[Session 2] Claude: ${text}`);
+        break; // Exit loop after handling assistant message
       }
     }
   }
