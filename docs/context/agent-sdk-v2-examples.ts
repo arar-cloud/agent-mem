@@ -11,6 +11,19 @@ import {
   unstable_v2_prompt,
 } from '@anthropic-ai/claude-agent-sdk';
 
+/**
+ * Extract text content from a message with the specified type.
+ * Reusable utility to avoid repeated .find() and type-guard logic across functions.
+ */
+function extractTextMessage(messages: any[], type: string): string | undefined {
+  const msg = messages.find(m => m.type === type);
+  if (msg && msg.content && Array.isArray(msg.content)) {
+    const textContent = msg.content.find((c: any) => c.type === 'text');
+    return textContent?.text;
+  }
+  return undefined;
+}
+
 async function main() {
   const example = process.argv[2] || 'basic';
 
@@ -32,18 +45,18 @@ async function main() {
   }
 }
 
-// Basic session with send/receive pattern
+// Basic session with send/receive pattern (Promise-based single message collection)
 async function basicSession() {
   console.log('=== Basic Session ===\n');
 
   await using session = unstable_v2_createSession({ model: 'sonnet' });
   await session.send('Hello! Introduce yourself in one sentence.');
 
-  for await (const msg of session.receive()) {
-    if (msg.type === 'assistant') {
-      const text = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
-      console.log(`Claude: ${text?.text}`);
-    }
+  // Receive single message batch via Promise instead of async generator to reduce overhead
+  const msg = await session.receiveNext();
+  if (msg.type === 'assistant') {
+    const text = extractTextMessage([{ type: 'text', text: msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text')?.text }], 'text');
+    console.log(`Claude: ${text}`);
   }
 }
 
@@ -57,8 +70,8 @@ async function multiTurn() {
   await session.send('What is 5 + 3? Just the number.');
   for await (const msg of session.receive()) {
     if (msg.type === 'assistant') {
-      const text = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
-      console.log(`Turn 1: ${text?.text}`);
+      const textBlock = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
+      console.log(`Turn 1: ${textBlock?.text}`);
     }
   }
 
@@ -66,13 +79,13 @@ async function multiTurn() {
   await session.send('Multiply that by 2. Just the number.');
   for await (const msg of session.receive()) {
     if (msg.type === 'assistant') {
-      const text = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
-      console.log(`Turn 2: ${text?.text}`);
+      const textBlock = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
+      console.log(`Turn 2: ${textBlock?.text}`);
     }
   }
 }
 
-// One-shot convenience function
+// One-shot convenience function (Promise-based message collection)
 async function oneShot() {
   console.log('=== One-Shot Prompt ===\n');
 
@@ -80,7 +93,7 @@ async function oneShot() {
 
   if (result.subtype === 'success') {
     console.log(`Answer: ${result.result}`);
-    console.log(`Cost: $${result.total_cost_usd.toFixed(4)}`);
+    console.log(`Cost: ${result.total_cost_usd.toFixed(4)}`);
   }
 }
 
@@ -102,8 +115,8 @@ async function sessionResume() {
         console.log(`[Session 1] ID: ${sessionId}`);
       }
       if (msg.type === 'assistant') {
-        const text = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
-        console.log(`[Session 1] Claude: ${text?.text}\n`);
+        const textBlock = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
+        console.log(`[Session 1] Claude: ${textBlock?.text}\n`);
       }
     }
   }
@@ -118,8 +131,8 @@ async function sessionResume() {
 
     for await (const msg of session.receive()) {
       if (msg.type === 'assistant') {
-        const text = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
-        console.log(`[Session 2] Claude: ${text?.text}`);
+        const textBlock = msg.message.content.find((c): c is { type: 'text'; text: string } => c.type === 'text');
+        console.log(`[Session 2] Claude: ${textBlock?.text}`);
       }
     }
   }

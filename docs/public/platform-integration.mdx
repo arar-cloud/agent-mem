@@ -2,6 +2,9 @@
 title: Platform Integration Guide
 description: Complete reference for integrating claude-mem worker service into VSCode extensions, IDE plugins, and CLI tools
 icon: plug
+reading_time: "12 min"
+complexity: "advanced"
+target_audience: "Integration Developers"
 ---
 
 <Note>
@@ -20,27 +23,26 @@ const DEFAULT_PORT = 37777; // Override with CLAUDE_MEM_WORKER_PORT
 
 ### Most Common Operations
 
+| Operation | Method | Endpoint | Purpose |
+|-----------|--------|----------|----------|
+| Health Check | GET | `/api/health` | Verify worker availability |
+| Queue Observation | POST | `/api/sessions/observations` | Store tool execution with context (claudeSessionId, tool_name, tool_input, tool_response, cwd) |
+| Queue Summary | POST | `/api/sessions/summarize` | Store conversation summary (claudeSessionId, last_user_message, last_assistant_message) |
+| Complete Session | POST | `/api/sessions/complete` | Mark session complete and stop SDK agent (claudeSessionId) |
+| Search Observations | GET | `/api/search?query=authentication&type=observations&format=index&limit=20` | Full-text + semantic search across observations |
+| Recent Context | GET | `/api/context/recent?project=my-project&limit=3` | Retrieve recent summaries and observations for project |
+
+**Quick Start Example:**
+
 ```typescript
 // Health check
-GET /api/health
+await fetch('http://localhost:37777/api/health');
 
-// Create/get session and queue observation
-POST /api/sessions/observations
-Body: { claudeSessionId, tool_name, tool_input, tool_response, cwd }
-
-// Queue summary
-POST /api/sessions/summarize
-Body: { claudeSessionId, last_user_message, last_assistant_message }
-
-// Complete session
-POST /api/sessions/complete
-Body: { claudeSessionId }
-
-// Search observations
-GET /api/search?query=authentication&type=observations&format=index&limit=20
-
-// Get recent context for project
-GET /api/context/recent?project=my-project&limit=3
+// Queue observation
+await fetch('http://localhost:37777/api/sessions/observations', {
+  method: 'POST',
+  body: JSON.stringify({ claudeSessionId, tool_name, tool_input, tool_response, cwd })
+});
 ```
 
 ### Environment Variables
